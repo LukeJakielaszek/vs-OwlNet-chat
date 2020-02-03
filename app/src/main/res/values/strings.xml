@@ -1,5 +1,8 @@
 <resources>
     <string name="app_name">vs-OwlNet-chat</string>
+    <string name="main_label">VS OwlNet Chat</string>
+    <string name="settings_label">Settings</string>
+    <string name="chat_label">Chat</string>
     <string name="join_button">Join</string>
     <string name="settings_button">Settings</string>
     <string name="user_name">Enter Username Here</string>
