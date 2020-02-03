@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">vs-OwlNet-chat</string>
+    <string name="join_button">Join</string>
+    <string name="settings_button">Settings</string>
+    <string name="user_name">Enter Username Here</string>
+    <string name="server_address">Server IP Address</string>
+    <string name="server_port">Server Port</string>
+    <string name="back_button">Back</string>
+</resources>
