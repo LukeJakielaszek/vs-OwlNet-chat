@@ -11,5 +11,7 @@ public class ChatActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
         setTitle(R.string.chat_label);
+
+
     }
 }
