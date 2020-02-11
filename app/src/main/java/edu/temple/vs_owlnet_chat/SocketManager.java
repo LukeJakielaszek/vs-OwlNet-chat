@@ -1,6 +1,8 @@
 package edu.temple.vs_owlnet_chat;
 
+import android.app.Activity;
 import android.content.Context;
+import android.os.Message;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -175,5 +177,66 @@ public class SocketManager {
         Log.d("TEST", "RESPONSE [" + response + "]");
 
         return response;
+    }
+
+    public static synchronized String transmitMessage(String message_type){
+        // create a message
+        DatagramPacket register_message = SocketManager.createOutMessage(message_type,
+                SocketManager.getUserName(), SocketManager.getUuid().toString());
+
+        // create an input buffer
+        byte in_packet_buf[] = new byte[256];
+        DatagramPacket in_packet = new DatagramPacket(in_packet_buf, in_packet_buf.length);
+
+        // Attempt to send message
+        int count = 0;
+        boolean success = false;
+        String response = null;
+
+        // loop 5 times for ack
+        while(count < 5){
+            count++;
+
+            SocketManager.sendMessage(register_message);
+
+            response = SocketManager.receiveMessage(in_packet);
+
+            if(response != null){
+                success = true;
+                break;
+            }
+        }
+
+        String toast_message;
+
+        if(success) {
+            try {
+                JSONObject resp = new JSONObject(response);
+                String type = (String) ((JSONObject)resp.get("header")).get("type");
+                if(type.equals("error")){
+                    // error message received from server
+                    String content = (String) ((JSONObject) resp.get("body")).get("content");
+                    String error = SocketManager.getStringError(Integer.parseInt(content));
+
+                    Log.d("Test", "ERROR: " + error);
+
+                    toast_message = error;
+                }else{
+                    // successful ack received
+                    Log.d("TEST", "Ack successfully received");
+
+                    toast_message = "success";
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+                toast_message = null;
+            }
+        }else{
+
+            toast_message = "ERROR: Socket timed out too many times";
+            Log.d("TEST", "ERROR: Socket timed out too many times");
+        }
+
+        return toast_message;
     }
 }

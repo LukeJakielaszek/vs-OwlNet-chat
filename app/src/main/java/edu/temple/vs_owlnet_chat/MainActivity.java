@@ -4,7 +4,6 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
-import android.net.SocketKeepalive;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -20,12 +19,9 @@ import org.json.JSONObject;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.net.Socket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.UUID;
-
-import static edu.temple.vs_owlnet_chat.SocketManager.getStringError;
 
 public class MainActivity extends AppCompatActivity {
     Button join_button;
@@ -36,12 +32,14 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public boolean handleMessage(@NonNull Message msg) {
             String message = (String) msg.obj;
-            Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
 
             if(msg.what == 1){
+                message = "Registration Successful";
                 Intent intent = new Intent(getApplicationContext(), ChatActivity.class);
                 MainActivity.this.startActivity(intent);
             }
+            
+            Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
 
             return false;
         }
@@ -82,6 +80,25 @@ public class MainActivity extends AppCompatActivity {
                             // generate a UUID for this instance
                             SocketManager.setUuid(UUID.randomUUID());
 
+                            String message = SocketManager.transmitMessage("register");
+
+                            Message toast_message = toast_handler.obtainMessage();
+                            toast_message.what = -1;
+                            if(message == null){
+                                toast_message.what = -2;
+                                toast_message.obj = "ERROR: Unable to parse JSON";
+                                toast_handler.sendMessage(toast_message);
+                            }else{
+                                if(message.equals("success")){
+                                    toast_message.what = 1;
+                                }
+
+                                toast_message.obj = message;
+
+                                toast_handler.sendMessage(toast_message);
+                            }
+
+                            /*
                             // create a registration message
                             DatagramPacket register_message = SocketManager.createOutMessage("register",
                                     SocketManager.getUserName(), SocketManager.getUuid().toString());
@@ -140,6 +157,8 @@ public class MainActivity extends AppCompatActivity {
                                 toast_handler.sendMessage(toast_message);
                                 Log.d("TEST", "ERROR: Socket timed out too many times");
                             }
+
+                             */
                         } catch (SocketException e) {
                             e.printStackTrace();
                         } catch (UnknownHostException e) {
