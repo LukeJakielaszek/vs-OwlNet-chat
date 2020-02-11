@@ -38,7 +38,7 @@ public class MainActivity extends AppCompatActivity {
                 Intent intent = new Intent(getApplicationContext(), ChatActivity.class);
                 MainActivity.this.startActivity(intent);
             }
-            
+
             Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
 
             return false;
