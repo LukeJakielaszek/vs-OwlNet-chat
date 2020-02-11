@@ -25,7 +25,16 @@ public class ChatActivity extends AppCompatActivity {
         deregister_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                SocketManager.sendMessage("deregister");
+                new Thread(){
+                    @Override
+                    public void run() {
+                        super.run();
+                        /*SocketManager.sendMessage("deregister");
+                        String response = SocketManager.receiveMessage();
+                        SocketManager.getSocket().close();
+                         */
+                    }
+                }.start();
             }
         });
 

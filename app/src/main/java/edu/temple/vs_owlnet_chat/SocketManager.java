@@ -1,6 +1,8 @@
 package edu.temple.vs_owlnet_chat;
 
+import android.content.Context;
 import android.util.Log;
+import android.widget.Toast;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -9,6 +11,7 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.SocketTimeoutException;
 import java.util.UUID;
 
 public class SocketManager {
@@ -58,7 +61,7 @@ public class SocketManager {
         return SocketManager.socket;
     }
 
-    public static synchronized String createJSONMessage(String type, String userName, String uuid){
+    public static synchronized DatagramPacket createOutMessage(String type, String userName, String uuid){
         JSONObject header = new JSONObject();
         JSONObject register_message = new JSONObject();
         try {
@@ -73,39 +76,103 @@ public class SocketManager {
             e.printStackTrace();
         }
 
-        return register_message.toString();
+        String reg_message = register_message.toString();
+        DatagramPacket out_packet = new DatagramPacket(reg_message.getBytes(), reg_message.length(), SocketManager.address, SocketManager.port);
+
+        return out_packet;
     }
 
-    public static synchronized boolean sendMessage(String type){
-        String message = createJSONMessage(type, SocketManager.userName, SocketManager.uuid.toString());
-
-        DatagramPacket out_packet = new DatagramPacket(message.getBytes(), message.length(), SocketManager.address, SocketManager.port);
+    public static synchronized boolean sendMessage(DatagramPacket message){
+        Log.d("TEST", "OUTPACKET: " + message);
 
         try {
-            SocketManager.socket.send(out_packet);
+            SocketManager.socket.send(message);
         } catch (IOException e) {
             e.printStackTrace();
+            return false;
         }
 
-        Log.d("Chat", "Register packet sent");
+        Log.d("TEST", "Message packet sent");
 
         return true;
     }
 
-    public static synchronized String receiveMessage(){
-        byte in_packet_buf[] = new byte[256];
-        DatagramPacket in_packet = new DatagramPacket(in_packet_buf, in_packet_buf.length);
+    /*
+    public static synchronized String register(){
+        int count = 0;
+        boolean success = false;
+        String response = null;
 
+        while(count < 5){
+            count++;
+
+            sendMessage("register");
+
+            response = receiveMessage();
+
+            if(response != null){
+                success = true;
+                break;
+            }
+        }
+
+        if(success) {
+            try {
+                JSONObject resp = new JSONObject(response);
+
+                String error = getStringError((int) ((JSONObject) resp.get("body")).get("content"));
+
+                return error;
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }else{
+            return null;
+        }
+
+        return "-1";
+    }*/
+
+    public static String getStringError(int errorCode) {
+        String error = null;
+        switch(errorCode) {
+            case 0:
+                error = "Registration failed";
+                break;
+            case 1:
+                error = "Deregistration failed due to the UUID";
+                break;
+            case 2:
+                error = "Deregistration failed due to the username";
+                break;
+            case 3:
+                error = "User authentication fail";
+                break;
+            case 4:
+                error = "Message parsing failed";
+                break;
+            default:
+                error = "Cannot decode error code";
+                break;
+        }
+        return error;
+    }
+
+    public static synchronized String receiveMessage(DatagramPacket in_packet){
         // receive() method
         try {
             SocketManager.socket.receive(in_packet);
+        } catch (SocketTimeoutException e){
+            e.printStackTrace();
+            Log.d("TEST", "Socket timed out");
+            return null;
         } catch (IOException e) {
             e.printStackTrace();
         }
 
         String response = new String(in_packet.getData(), 0, in_packet.getLength());
 
-        Log.d("Chat", "RESPONSE [" + response + "]");
+        Log.d("TEST", "RESPONSE [" + response + "]");
 
         return response;
     }
