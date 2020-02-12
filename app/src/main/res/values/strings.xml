@@ -11,4 +11,5 @@
     <string name="back_button">Back</string>
     <string name="deregister_button">Deregister</string>
     <string name="start_chat_button">Initiate Chat</string>
+    <string name="submit_button">Submit</string>
 </resources>

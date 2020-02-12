@@ -27,6 +27,7 @@ public class MainActivity extends AppCompatActivity {
     Button join_button;
     Button settings_button;
     DatagramSocket datagramSocket;
+    boolean isFirstStart = true;
 
     Handler toast_handler = new Handler(new Handler.Callback() {
         @Override
@@ -55,6 +56,22 @@ public class MainActivity extends AppCompatActivity {
 
         this.settings_button = findViewById(R.id.SettingsButton);
 
+        new Thread(){
+            @Override
+            public void run() {
+                super.run();
+                if(MainActivity.this.isFirstStart){
+                    MainActivity.this.isFirstStart = false;
+                    try {
+                        SocketManager.setPort(4446);
+                        SocketManager.setAddress(InetAddress.getByName("169.254.108.101"));
+                    } catch (UnknownHostException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }.start();
+
         this.join_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -72,8 +89,6 @@ public class MainActivity extends AppCompatActivity {
 
                             // create socket with port and address
                             SocketManager.setSocket(datagramSocket);
-                            SocketManager.setPort(4446);
-                            SocketManager.setAddress(InetAddress.getByName("169.254.108.101"));
 
                             SocketManager.setUserName(((EditText)findViewById(R.id.UserName)).getText().toString());
 
@@ -98,8 +113,6 @@ public class MainActivity extends AppCompatActivity {
                                 toast_handler.sendMessage(toast_message);
                             }
                         } catch (SocketException e) {
-                            e.printStackTrace();
-                        } catch (UnknownHostException e) {
                             e.printStackTrace();
                         }
                     }
