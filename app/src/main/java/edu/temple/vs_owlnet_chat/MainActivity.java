@@ -68,7 +68,7 @@ public class MainActivity extends AppCompatActivity {
                             datagramSocket = new DatagramSocket();
 
                             // set the socket timeout to 2
-                            datagramSocket.setSoTimeout(2);
+                            datagramSocket.setSoTimeout(2000);
 
                             // create socket with port and address
                             SocketManager.setSocket(datagramSocket);
@@ -97,68 +97,6 @@ public class MainActivity extends AppCompatActivity {
 
                                 toast_handler.sendMessage(toast_message);
                             }
-
-                            /*
-                            // create a registration message
-                            DatagramPacket register_message = SocketManager.createOutMessage("register",
-                                    SocketManager.getUserName(), SocketManager.getUuid().toString());
-
-                            byte in_packet_buf[] = new byte[256];
-                            DatagramPacket in_packet = new DatagramPacket(in_packet_buf, in_packet_buf.length);
-
-                            // Attempt to register
-                            int count = 0;
-                            boolean success = false;
-                            String response = null;
-
-                            while(count < 5){
-                                count++;
-
-                                SocketManager.sendMessage(register_message);
-
-                                response = SocketManager.receiveMessage(in_packet);
-
-                                if(response != null){
-                                    success = true;
-                                    break;
-                                }
-                            }
-
-                            Message toast_message = toast_handler.obtainMessage();
-                            toast_message.what = -1;
-
-                            if(success) {
-                                try {
-                                    JSONObject resp = new JSONObject(response);
-                                    String type = (String) ((JSONObject)resp.get("header")).get("type");
-                                    if(type.equals("error")){
-                                        // error message received from server
-                                        String content = (String) ((JSONObject) resp.get("body")).get("content");
-                                        String error = SocketManager.getStringError(Integer.parseInt(content));
-
-                                        Log.d("Test", "ERROR: " + error);
-
-                                        toast_message.obj = error;
-                                        toast_handler.sendMessage(toast_message);
-                                    }else{
-                                        // successful ack received
-                                        Log.d("TEST", "Ack successfully received");
-
-                                        toast_message.obj = "Registration Successful";
-                                        toast_message.what = 1;
-                                        toast_handler.sendMessage(toast_message);
-                                    }
-                                } catch (JSONException e) {
-                                    e.printStackTrace();
-                                }
-                            }else{
-
-                                toast_message.obj = "ERROR: Socket timed out too many times";
-                                toast_handler.sendMessage(toast_message);
-                                Log.d("TEST", "ERROR: Socket timed out too many times");
-                            }
-
-                             */
                         } catch (SocketException e) {
                             e.printStackTrace();
                         } catch (UnknownHostException e) {

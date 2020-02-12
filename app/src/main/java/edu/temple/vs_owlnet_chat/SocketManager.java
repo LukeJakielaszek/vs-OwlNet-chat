@@ -85,7 +85,7 @@ public class SocketManager {
     }
 
     public static synchronized boolean sendMessage(DatagramPacket message){
-        Log.d("TEST", "OUTPACKET: " + message);
+        Log.d("TEST", "OUTPACKET: " + message.getData().toString());
 
         try {
             SocketManager.socket.send(message);
@@ -99,44 +99,8 @@ public class SocketManager {
         return true;
     }
 
-    /*
-    public static synchronized String register(){
-        int count = 0;
-        boolean success = false;
-        String response = null;
-
-        while(count < 5){
-            count++;
-
-            sendMessage("register");
-
-            response = receiveMessage();
-
-            if(response != null){
-                success = true;
-                break;
-            }
-        }
-
-        if(success) {
-            try {
-                JSONObject resp = new JSONObject(response);
-
-                String error = getStringError((int) ((JSONObject) resp.get("body")).get("content"));
-
-                return error;
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-        }else{
-            return null;
-        }
-
-        return "-1";
-    }*/
-
     public static String getStringError(int errorCode) {
-        String error = null;
+        String error;
         switch(errorCode) {
             case 0:
                 error = "Registration failed";

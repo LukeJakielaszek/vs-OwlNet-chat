@@ -7,11 +7,14 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.util.ArrayList;
 
 public class ChatActivity extends AppCompatActivity {
     Button deregister_button;
@@ -87,25 +90,25 @@ public class ChatActivity extends AppCompatActivity {
                     public void run() {
                         super.run();
 
-                        String message = SocketManager.transmitMessage("retrieve_chat_log");
+                        // create a message
+                        DatagramPacket retrieve_log_message = SocketManager.createOutMessage("retrieve_chat_log",
+                                SocketManager.getUserName(), SocketManager.getUuid().toString());
 
-                        Message toast_message = toast_handler.obtainMessage();
-                        toast_message.what = -1;
-                        if(message == null){
-                            toast_message.what = -2;
-                            toast_message.obj = "ERROR: Unable to parse JSON";
-                            toast_handler.sendMessage(toast_message);
-                        }else{
-                            if(message.equals("success")){
-                                toast_message.what = 2;
+                        // create an input buffer
+                        byte in_packet_buf[] = new byte[256];
+                        DatagramPacket in_packet = new DatagramPacket(in_packet_buf, in_packet_buf.length);
+
+
+                        SocketManager.sendMessage(retrieve_log_message);
+
+                        ArrayList<String> response_list = new ArrayList<>();
+                        String response;
+                        do{
+                            response = SocketManager.receiveMessage(in_packet);
+                            if(response != null) {
+                                response_list.add(response);
                             }
-
-                            toast_message.obj = message;
-
-                            toast_handler.sendMessage(toast_message);
-                        }
-
-                        datagramSocket.close();
+                        }while(response != null);
                     }
                 }.start();
             }
