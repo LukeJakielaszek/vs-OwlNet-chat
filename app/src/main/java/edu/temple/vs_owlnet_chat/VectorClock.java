@@ -72,7 +72,7 @@ public class VectorClock implements Clock {
         Map<Integer, Integer> clock = vectorClock.getClock();
         for(Integer key : clock.keySet()){
             if(!this.vector.containsKey(key)){
-                return false;
+                continue;
             }else if(this.vector.get(key) > clock.get(key)){
                 return false;
             }
@@ -140,7 +140,7 @@ public class VectorClock implements Clock {
                     newClock.put(key, val);
                 }
 
-                this.setClock((Clock)newClock);
+                this.vector = newClock;
 
             }catch (Exception e){
                 // invalid clock format. Do nothing
