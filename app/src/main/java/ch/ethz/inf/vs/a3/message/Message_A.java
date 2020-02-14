@@ -1,13 +1,32 @@
 package ch.ethz.inf.vs.a3.message;
 
-import ch.ethz.inf.vs.a3.clock.Clock;
+import org.json.JSONException;
+import org.json.JSONObject;
 
-class Message {
+import ch.ethz.inf.vs.a3.clock.Clock;
+import edu.temple.vs_owlnet_chat.VectorClock;
+
+public class Message_A {
     private Clock timestamp;
     private String username;
     private String uuid;
     private String type;
     private String content;
+
+    public Message_A(JSONObject message) throws JSONException {
+        JSONObject header = message.getJSONObject("header");
+        JSONObject body = message.getJSONObject("body");
+
+        this.content = body.getString("content");
+
+        VectorClock timestamp = new VectorClock();
+        timestamp.setClockFromString(header.getString("timestamp"));
+        this.timestamp = timestamp;
+
+        this.username = header.getString("username");
+        this.type = header.getString("type");
+        this.uuid = header.getString("uuid");
+    }
 
     public Clock getTimestamp() {
         return timestamp;

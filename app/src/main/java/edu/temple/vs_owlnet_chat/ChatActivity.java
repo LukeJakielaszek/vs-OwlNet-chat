@@ -3,23 +3,53 @@ package edu.temple.vs_owlnet_chat;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.util.ArrayList;
+import java.util.PriorityQueue;
+
+import ch.ethz.inf.vs.a3.message.MessageComparator;
+import ch.ethz.inf.vs.a3.message.Message_A;
 
 public class ChatActivity extends AppCompatActivity {
     Button deregister_button;
     Button retrieve_chat_button;
     DatagramSocket datagramSocket;
+    TextView chatText;
+
+    Handler response_handler = new Handler(new Handler.Callback() {
+        @Override
+        public boolean handleMessage(@NonNull Message msg) {
+            try {
+                PriorityQueue<Message_A> priorityQueue = (PriorityQueue<Message_A>) msg.obj;
+
+                StringBuilder sb = new StringBuilder();
+                while(!priorityQueue.isEmpty()){
+                    Message_A curMessage = priorityQueue.poll();
+
+                    sb.append(curMessage.getTimestamp() + " : " + curMessage.getUsername() + ": [" + curMessage.getContent() + "]\n");
+                }
+
+                chatText.setText(sb.toString());
+
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+
+            return false;
+        }
+    });
 
     Handler toast_handler = new Handler(new Handler.Callback() {
         @Override
@@ -44,6 +74,7 @@ public class ChatActivity extends AppCompatActivity {
         setContentView(R.layout.activity_chat);
         setTitle(R.string.chat_label);
 
+        chatText = findViewById(R.id.ChatView);
         datagramSocket = SocketManager.getSocket();
 
         deregister_button = findViewById(R.id.DeregisterButton);
@@ -98,17 +129,30 @@ public class ChatActivity extends AppCompatActivity {
                         byte in_packet_buf[] = new byte[256];
                         DatagramPacket in_packet = new DatagramPacket(in_packet_buf, in_packet_buf.length);
 
-
+                        // send the retreive chat message
                         SocketManager.sendMessage(retrieve_log_message);
 
-                        ArrayList<String> response_list = new ArrayList<>();
+                        PriorityQueue<Message_A> priorityQueue = new PriorityQueue<>(10, new MessageComparator());
+
+                        ArrayList<Message_A> response_list = new ArrayList<>();
                         String response;
                         do{
                             response = SocketManager.receiveMessage(in_packet);
                             if(response != null) {
-                                response_list.add(response);
+                                try {
+                                    Message_A message = new Message_A(new JSONObject(response));
+                                    priorityQueue.add(message);
+                                    response_list.add(message);
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
                             }
                         }while(response != null);
+
+                        // send the sorted messages to UI thread
+                        Message message = response_handler.obtainMessage();
+                        message.obj = priorityQueue;
+                        response_handler.sendMessage(message);
                     }
                 }.start();
             }
