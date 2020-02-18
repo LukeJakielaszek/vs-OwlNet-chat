@@ -20,22 +20,32 @@ import java.net.UnknownHostException;
 import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity {
+    //button to register with server
     Button join_button;
+
+    // button to set ip / port
     Button settings_button;
+
+    // server socket
     DatagramSocket datagramSocket;
+
+    // determines if first launch of app
     boolean isFirstStart = true;
 
+    // displays registration success / fail to user
     Handler toast_handler = new Handler(new Handler.Callback() {
         @Override
         public boolean handleMessage(@NonNull Message msg) {
             String message = (String) msg.obj;
 
             if(msg.what == 1){
+                // if successful, notify user and launch chat activity
                 message = "Registration Successful";
                 Intent intent = new Intent(getApplicationContext(), ChatActivity.class);
                 MainActivity.this.startActivity(intent);
             }
 
+            // display toast (error by default)
             Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
 
             return false;
@@ -46,17 +56,21 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        // set title to vs owlnet chat
         setTitle(R.string.main_label);
 
+        // find the join button
         this.join_button = findViewById(R.id.JoinButton);
 
+        // find the settings button
         this.settings_button = findViewById(R.id.SettingsButton);
 
-        new Thread(){
-            @Override
-            public void run() {
-                super.run();
-                if(MainActivity.this.isFirstStart){
+        // if its first start, set the port to default
+        if (this.isFirstStart) {
+            new Thread() {
+                @Override
+                public void run() {
+                    super.run();
                     MainActivity.this.isFirstStart = false;
                     try {
                         SocketManager.setPort(4446);
@@ -65,9 +79,11 @@ public class MainActivity extends AppCompatActivity {
                         e.printStackTrace();
                     }
                 }
-            }
-        }.start();
 
+            }.start();
+        }
+
+        // set click listener to attempt to register with server
         this.join_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -91,21 +107,32 @@ public class MainActivity extends AppCompatActivity {
                             // generate a UUID for this instance
                             SocketManager.setUuid(UUID.randomUUID());
 
+                            // attempt to register
                             String message = SocketManager.transmitMessage("register");
 
+                            // obtain message to UI thread
                             Message toast_message = toast_handler.obtainMessage();
+
+                            // set what to fail by default
                             toast_message.what = -1;
+
                             if(message == null){
+                                // indicate JSON parsing error in message
                                 toast_message.what = -2;
                                 toast_message.obj = "ERROR: Unable to parse JSON";
+
+                                // send message to UI thread for toast
                                 toast_handler.sendMessage(toast_message);
                             }else{
                                 if(message.equals("success")){
+                                    // indicate successful message
                                     toast_message.what = 1;
                                 }
 
+                                // store message (success or an error)
                                 toast_message.obj = message;
 
+                                // send the message to UI thread for toast
                                 toast_handler.sendMessage(toast_message);
                             }
                         } catch (SocketException e) {
@@ -116,6 +143,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        // launch the settings activity
         this.settings_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
