@@ -16,7 +16,6 @@ import org.json.JSONObject;
 
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.util.ArrayList;
 import java.util.PriorityQueue;
 
 import ch.ethz.inf.vs.a3.message.MessageComparator;
@@ -40,12 +39,38 @@ public class ChatActivity extends AppCompatActivity {
                 // get the PQ for messages
                 PriorityQueue<Message_A> priorityQueue = (PriorityQueue<Message_A>) msg.obj;
 
+                Message_A prev_message = null;
                 // construct a string representation of ordered messages
                 StringBuilder sb = new StringBuilder();
+                int count = 0;
+                MessageComparator messageComparator = new MessageComparator();
                 while(!priorityQueue.isEmpty()){
                     Message_A curMessage = priorityQueue.poll();
 
-                    sb.append(curMessage.getTimestamp() + " : " + curMessage.getUsername() + ": [" + curMessage.getContent() + "]\n");
+                    if(count == 0){
+                        // set the previous to be current
+                        prev_message = curMessage;
+
+                        // initialize string to current message (no conflicts possible)
+                        sb.append(curMessage.getTimestamp() + " : " + curMessage.getUsername() + ": [" + curMessage.getContent() + "] ");
+                    }else{
+                        if(messageComparator.compare(curMessage, prev_message) == 0){
+                            // conflict with previous message
+                            sb.append("--- Conflict detected below ---");
+
+                            sb.append("\n" + curMessage.getTimestamp() + " : " + curMessage.getUsername() + ": [" + curMessage.getContent() + "] ");
+
+                            sb.append("--- Conflict detected above ---");
+                        }else{
+                            // no conflicts detected
+                            sb.append("\n" + curMessage.getTimestamp() + " : " + curMessage.getUsername() + ": [" + curMessage.getContent() + "] ");
+                        }
+
+                        // update the previous message
+                        prev_message = curMessage;
+                    }
+
+                    count++;
                 }
 
                 // display the ordered messages

@@ -12,8 +12,11 @@ public class MessageComparator implements Comparator<Message_A> {
         // returns -1 if lhs has all array indices less than rhs, otherwise 1
         if(lhs.getTimestamp().happenedBefore(rhs.getTimestamp())){
             return -1;
-        }else {
+        }else if(rhs.getTimestamp().happenedBefore(lhs.getTimestamp())) {
             return 1;
+        } else{
+            // if both false, timestamps are in conflict
+            return 0;
         }
     }
 }
