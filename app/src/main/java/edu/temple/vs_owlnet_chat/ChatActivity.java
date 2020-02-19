@@ -69,9 +69,12 @@ public class ChatActivity extends AppCompatActivity {
             if(msg.what == 1){
                 // deregestration success
                 message = "Deregistration Successful";
+                SocketManager.isRegistered = false;
             }else if(msg.what == 2){
                 // chat inititation success
                 message = "Chat Initiated";
+            }else if(msg.what == 3){
+                message = "ERROR: Already Deregistered";
             }
 
             // display the message
@@ -109,11 +112,16 @@ public class ChatActivity extends AppCompatActivity {
                     public void run() {
                         super.run();
 
-                        // transmit a deregister message
-                        String message = SocketManager.transmitMessage("deregister");
-
                         // obtain a message to send to UI thread
                         Message toast_message = toast_handler.obtainMessage();
+
+                        if(SocketManager.isRegistered == false){
+                            toast_message.what = 3;
+                            toast_handler.sendMessage(toast_message);
+                            return;
+                        }
+                        // transmit a deregister message
+                        String message = SocketManager.transmitMessage("deregister");
 
                         // default what to indicate failure
                         toast_message.what = -1;
@@ -152,6 +160,14 @@ public class ChatActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         super.run();
+
+                        // obtain a message to send to UI thread
+                        Message toast_message = toast_handler.obtainMessage();
+                        if(SocketManager.isRegistered == false){
+                            toast_message.what = 3;
+                            toast_handler.sendMessage(toast_message);
+                            return;
+                        }
 
                         // create a retrieve chat log message
                         DatagramPacket retrieve_log_message = SocketManager.createOutMessage("retrieve_chat_log",

@@ -14,6 +14,9 @@ import java.util.UUID;
 
 // class to manage all socket interaction
 public class SocketManager {
+    // currently registered
+    public static boolean isRegistered;
+
     // the client socket
     private static DatagramSocket socket;
 

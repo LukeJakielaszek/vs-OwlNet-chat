@@ -41,6 +41,7 @@ public class MainActivity extends AppCompatActivity {
             if(msg.what == 1){
                 // if successful, notify user and launch chat activity
                 message = "Registration Successful";
+                SocketManager.isRegistered = true;
                 Intent intent = new Intent(getApplicationContext(), ChatActivity.class);
                 MainActivity.this.startActivity(intent);
             }
