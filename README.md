@@ -64,10 +64,11 @@ The vector clock class implements all vector clock functionality by using a hash
 logical time of each process. All unit tests were passed with 100%. 
 
 The happenedBefore(Clock other) function within this class will loop through each 
-key of the other clock and check if this clock has it. If this clock does not contain all other keys within the other clock, false is
-returned. If any of the keys within this clock map to a value greater than or equal to the other clock's key value pair, false is
+key of the other clock and check if this clock has it. If this clock does not contain a key within the other clock, the key is skipped. If any of the keys within this clock map to a value greater than or equal to the other clock's key value pair, false is
 returned. Finally, this function loops through the all keys of this clock and check to ensure that they also exist in the other clock. 
 If a key does not exist in the other clock but exists in this clock, false is returned. If all these conditions pass, true is returned.
+Effectively, this function ensures that this clock is a subset of the other clock and that all key value pairs are strictly less than
+the other clock.
 
 The addProcess(pid, time) will simply add a process to the vectorClocks mapping with the indicated time.
 
